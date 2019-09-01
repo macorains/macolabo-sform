@@ -3,7 +3,7 @@
 Plugin Name: Sform Plugin
 Plugin URI:
 Description: Sformによるフォーム表示
-Version: 0.0.1
+Version: 0.0.2
 Author: Macorains
 Author URI:
 License: GPL2
@@ -106,7 +106,8 @@ add_action( 'wp_ajax_nopriv_view_sitename', 'view_sitename' );
 add_filter( 'the_content', function($content) {
     $loader = new MacolaboSformLoader();
     //return 'おおお';
-	return $loader->tag_replace($content);
+    //return $loader->tag_replace($content);
+    return $loader->form_load('', $content);
 } );
 
 

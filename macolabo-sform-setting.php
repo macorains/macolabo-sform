@@ -66,7 +66,7 @@ class MacolaboSformSettingPage {
      */
     public function api_url_callback()
     {
-        $user_id = isset($this->options['api_url']) ? $this->options['api_url'] : '';
+        $api_url = isset($this->options['api_url']) ? $this->options['api_url'] : '';
         ?>
         <input type="text" id="api_url" name="msform_setting[api_url]" value="<?php esc_attr_e($api_url)?>" />
         <?php
@@ -111,12 +111,34 @@ class MacolaboSformSettingPage {
         $this->options = get_option('msform_setting');
         $new_input = array();
 
+        if(isset($input['api_url']) && trim($input['api_url']) !== ''){
+            $new_input['api_url'] = sanitize_text_field($input['api_url']);
+        } else {
+            add_settings_error('msform_setting', 'api_url', 'URLを入力してください');
+            $new_input['api_url']= isset($this->options['api_url']) ? $this->options['api_url'] : '';
+        }
+
         if(isset($input['user_id']) && trim($input['user_id']) !== ''){
             $new_input['user_id'] = sanitize_text_field($input['user_id']);
         } else {
-            add_setting_error('msform_setting', 'user_id', 'ユーザーIDを入力してください');
+            add_settings_error('msform_setting', 'user_id', 'ユーザーIDを入力してください');
             $new_input['user_id']= isset($this->options['user_id']) ? $this->options['user_id'] : '';
         }
+
+        if(isset($input['group']) && trim($input['group']) !== ''){
+            $new_input['group'] = sanitize_text_field($input['group']);
+        } else {
+            add_settings_error('msform_setting', 'group', 'グループを入力してください');
+            $new_input['group']= isset($this->options['group']) ? $this->options['group'] : '';
+        }
+
+        if(isset($input['password']) && trim($input['password']) !== ''){
+            $new_input['password'] = sanitize_text_field($input['password']);
+        } else {
+            add_settings_error('msform_setting', 'password', 'パスワードを入力してください');
+            $new_input['password']= isset($this->options['password']) ? $this->options['password'] : '';
+        }
+
         return $new_input;
     }
 }

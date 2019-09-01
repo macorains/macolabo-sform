@@ -24,12 +24,12 @@ class MacolaboSformLoader {
     /**
      * login
      */
-    function _login($ini) {
-        $url = $ini['baseurl'] . "signin";
+    function _login() {
+        $url = $this->options['api_url'] . "signin";
         $data = [
-            'email' => $ini['email'],
-            'password' => $ini['password'],
-            'group' => $ini['group']
+            'email' => $this->options['user_id'],
+            'password' => $this->options['password'],
+            'group' => $this->options['group']
         ];
 
         $res = apicall($url, $data, '');
@@ -40,25 +40,34 @@ class MacolaboSformLoader {
      * load
      * parameters
      *   - auth_token : loginで取得したauthToken
+     *   - content : wordpressの本文部分
      *   - request  : リクエストデータ
      *   - ini : 設定ファイル内容
      * return
      *   - response_data : レスポンス
      */
-    function form_load($auth_token, $request, $ini) {
-        $url = $ini['baseurl'] . "load";
+    function form_load($auth_token, $content) {
+        // TODO 適切な判定関数を適用すること
+        $auth_token == '' ? $this->_login : $auth_token;
+        $url = $this->options['api_url'] . "load";
+        // TODO Validate失敗後のリロード時どうするか？
+        $form_param = get_form_param($content);
+
         $data = [
-            'formid' => $request['formid'],
-            'receiverPath' => $request['receiverPath']
+            'formid' => $form_param->form_id,
+            'receiverPath' => ''
         ];
 
         $res = apicall($url, $data, $auth_token);
 
-        $response_data = [
-            'authToken' => $auth_token,
-            'html' => $res['data']
-        ];
-        return json_encode($response_data);
+        // TODO レスポンスHTML/JSの中でform_idとauth_tokenを保持させる必要あり？
+        return preg_replace('/<msform>.*<\/msform>/', $res['data'], $content);
+
+        // $response_data = [
+        //     'authToken' => $auth_token,
+        //     'html' => $res['data']
+        // ];
+        //return json_encode($response_data);
     }
 
     /**
@@ -72,7 +81,8 @@ class MacolaboSformLoader {
      *   - html : バリデーションNGの場合に表示させるHTML
      */
     function form_validate($request, $ini) {
-        $url = $ini['baseurl'] . "validate";
+        // TODO auth_tokenがnullの場合は403を返す
+        $url = $this->options['api_url'] . "validate";
         $data = [
             'formid' => $request['formid'],
             'receiverpath' => $request['receiverpath'],
@@ -91,7 +101,8 @@ class MacolaboSformLoader {
      * confirm
      */
     function form_confirm($request, $ini) {
-        $url = $ini['baseurl'] . "confirm";
+        // TODO auth_tokenがnullの場合は403を返す
+        $url = $this->options['api_url'] . "confirm";
         $data = [
             'formid' => $request['formid'],
             'cacheid' => $request['cacheid'],
@@ -110,7 +121,8 @@ class MacolaboSformLoader {
      * save
      */
     function form_save($request, $ini) {
-        $url = $ini['baseurl'] . "save";
+        // TODO auth_tokenがnullの場合は403を返す
+        $url = $this->options['api_url'] . "save";
         $data = [
             'formid' => $request['formid'],
             'cacheid' => $request['cacheid'],
@@ -161,4 +173,12 @@ class MacolaboSformLoader {
         return $response_data;
     }
 
+    /**
+     * get_form_param
+     */
+    function get_form_param($content) {
+        preg_match('/<msform>.*<\/msform>/',$content, $params);
+        $param_obj = simplexml_load_string($params[0]); 
+        return $param_obj;
+    }
 }
