@@ -37,6 +37,7 @@ function msform_hello() {
 
 // Sform JS
 function msform_js_footer(){
+    wp_enqueue_script('macolabo-sform', plugins_url( 'macolabo-sform' ) . '/macolabo-sform.js');
     wp_print_scripts( array( 'jquery' ));
     ?>
     <script type="text/javascript">
@@ -92,22 +93,9 @@ add_action('wp_ajax_nopriv_msform_confirm_form', 'msform_confirm_form');
 add_action('wp_ajax_msform_save_form', 'msform_save_form');
 add_action('wp_ajax_nopriv_msform_save_form', 'msform_save_form');
 
-/*
-function view_sitename(){
-    echo get_bloginfo( 'name' );
-    echo ('!!!');
-    die();
-}
-add_action( 'wp_ajax_view_sitename', 'view_sitename' );
-add_action( 'wp_ajax_nopriv_view_sitename', 'view_sitename' );
-// ajax test
-*/
-
 add_filter( 'the_content', function($content) {
     $loader = new MacolaboSformLoader();
-    //return 'おおお';
-    //return $loader->tag_replace($content);
-    return $loader->form_load('', $content);
+    return $loader->form_load(null, $content, null);
 } );
 
 

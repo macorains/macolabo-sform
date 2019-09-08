@@ -10,6 +10,7 @@ class MacolaboSformLoader {
     {
         $this->options = get_option('msform_setting');
         wp_enqueue_script('jquery');
+
     }
 
     public function hello(){
@@ -25,14 +26,14 @@ class MacolaboSformLoader {
      * login
      */
     function _login() {
-        $url = $this->options['api_url'] . "signin";
+        $url = $this->options['api_url'] . "/signin";
         $data = [
             'email' => $this->options['user_id'],
             'password' => $this->options['password'],
             'group' => $this->options['group']
         ];
-
-        $res = apicall($url, $data, '');
+    
+        $res = $this->apicall($url, $data, '');
         return $res['header']['X-Auth-Token'];
     }
 
@@ -41,33 +42,28 @@ class MacolaboSformLoader {
      * parameters
      *   - auth_token : loginで取得したauthToken
      *   - content : wordpressの本文部分
-     *   - request  : リクエストデータ
+     *   - cache_id  : フォームキャッシュID（エラー時に使用）
      *   - ini : 設定ファイル内容
      * return
      *   - response_data : レスポンス
      */
-    function form_load($auth_token, $content) {
-        // TODO 適切な判定関数を適用すること
-        $auth_token == '' ? $this->_login : $auth_token;
-        $url = $this->options['api_url'] . "load";
+    function form_load($auth_token, $content, $cache_id) {
+        $auth_token = empty($auth_token) ? $this->_login() : $auth_token;
+        $url = $this->options['api_url'] . "/load";
         // TODO Validate失敗後のリロード時どうするか？
-        $form_param = get_form_param($content);
+        $form_param = $this->get_form_param($content);
 
+        foreach($form_param->form_id as $form_id)
         $data = [
-            'formid' => $form_param->form_id,
-            'receiverPath' => ''
+            'formid' => (string)$form_id,
+            'receiverPath' => '',
+            'cacheid' => $cache_id
         ];
 
-        $res = apicall($url, $data, $auth_token);
-
+        $res = $this->apicall($url, $data, $auth_token);
         // TODO レスポンスHTML/JSの中でform_idとauth_tokenを保持させる必要あり？
-        return preg_replace('/<msform>.*<\/msform>/', $res['data'], $content);
-
-        // $response_data = [
-        //     'authToken' => $auth_token,
-        //     'html' => $res['data']
-        // ];
-        //return json_encode($response_data);
+        return preg_replace('/<msform>.*<\/msform>/', json_decode($res['data']), str_replace("\n", '', $content));
+ 
     }
 
     /**
@@ -89,7 +85,7 @@ class MacolaboSformLoader {
             'postdata' => $request['postdata']
         ];
 
-        $res = apicall($url, $data, $request['auth_token']);
+        $res = $this->apicall($url, $data, $request['auth_token']);
 
         $response_data = [
             'html' => $res['data']
@@ -97,6 +93,7 @@ class MacolaboSformLoader {
         return json_encode($response_data);
 
     }
+
     /**
      * confirm
      */
@@ -110,7 +107,7 @@ class MacolaboSformLoader {
             'postdata' => $request['postdata']
         ];
 
-        $res = apicall($url, $data, $request['auth_token']);
+        $res = $this->apicall($url, $data, $request['auth_token']);
         $response_data = [
             'html' => $res['data']
         ];
@@ -129,7 +126,7 @@ class MacolaboSformLoader {
             'receiverPath' => $request['receiverPath'],
         ];
 
-        $res = apicall($url, $data, $request['auth_token']);
+        $res = $this->apicall($url, $data, $request['auth_token']);
         $response_data = [
             'html' => $res['data']
         ];
@@ -177,7 +174,7 @@ class MacolaboSformLoader {
      * get_form_param
      */
     function get_form_param($content) {
-        preg_match('/<msform>.*<\/msform>/',$content, $params);
+        preg_match('/<msform>.*<\/msform>/',str_replace("\n", '', $content), $params);
         $param_obj = simplexml_load_string($params[0]); 
         return $param_obj;
     }
