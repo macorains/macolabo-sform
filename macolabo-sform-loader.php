@@ -13,15 +13,6 @@ class MacolaboSformLoader {
 
     }
 
-    public function hello(){
-        return 'hello!';
-    }
-
-    public function tag_replace($content){
-        $html  = '<button id="submit-x" type="button">View Sitename</button>';
-        return str_replace('<!-- msform -->',$html . $this->options['user_id'],$content);
-    }
-
     /**
      * login
      */
@@ -61,45 +52,37 @@ class MacolaboSformLoader {
         ];
 
         $res = $this->apicall($url, $data, $auth_token);
-        // TODO レスポンスHTML/JSの中でform_idとauth_tokenを保持させる必要あり？
-        return preg_replace('/<msform>.*<\/msform>/', json_decode($res['data']), str_replace("\n", '', $content));
- 
+        $html = json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
+        return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
     }
 
     /**
      * validate
      * parameters
-     *   - request  : リクエストデータ
-     *   - ini : 設定ファイル内容
+     *   - form_id  : フォームID
+     *   - postdata : フォーム送信データ
      * return
      *   - result : バリデーション結果
      *   - validatekey : バリデーションチェックキー
      *   - html : バリデーションNGの場合に表示させるHTML
      */
-    function form_validate($request, $ini) {
-        // TODO auth_tokenがnullの場合は403を返す
-        $url = $this->options['api_url'] . "validate";
-        $data = [
-            'formid' => $request['formid'],
-            'receiverpath' => $request['receiverpath'],
-            'postdata' => $request['postdata']
-        ];
+    function form_validate($form_id, $postdata) {
+        // Memo JWT認証の場合、セッションID毎にハッシュを作るので、load時とvalidate時でセッション違うため引き回しできない
+        //      セッションごとに認証通す必要ある
+        $auth_token = $this->_login();
+        $url = $this->options['api_url'] . "/validate";
+        $data = Array('formid' => $form_id, 'receiverPath' => '', 'postdata' => $postdata);
+        $res = $this->apicall($url, $data, $auth_token);
 
-        $res = $this->apicall($url, $data, $request['auth_token']);
-
-        $response_data = [
-            'html' => $res['data']
-        ];
-        return json_encode($response_data);
-
+        return json_encode($res['data']);
     }
 
     /**
      * confirm
      */
-    function form_confirm($request, $ini) {
-        // TODO auth_tokenがnullの場合は403を返す
-        $url = $this->options['api_url'] . "confirm";
+    function form_confirm($request) {
+        $auth_token = $this->_login();
+        $url = $this->options['api_url'] . "/confirm";
         $data = [
             'formid' => $request['formid'],
             'cacheid' => $request['cacheid'],
@@ -107,7 +90,7 @@ class MacolaboSformLoader {
             'postdata' => $request['postdata']
         ];
 
-        $res = $this->apicall($url, $data, $request['auth_token']);
+        $res = $this->apicall($url, $data, $auth_token);
         $response_data = [
             'html' => $res['data']
         ];
@@ -117,16 +100,16 @@ class MacolaboSformLoader {
     /**
      * save
      */
-    function form_save($request, $ini) {
-        // TODO auth_tokenがnullの場合は403を返す
-        $url = $this->options['api_url'] . "save";
+    function form_save($request) {
+        $auth_token = $this->_login();
+        $url = $this->options['api_url'] . "/save";
         $data = [
             'formid' => $request['formid'],
             'cacheid' => $request['cacheid'],
             'receiverPath' => $request['receiverPath'],
         ];
 
-        $res = $this->apicall($url, $data, $request['auth_token']);
+        $res = $this->apicall($url, $data, $auth_token);
         $response_data = [
             'html' => $res['data']
         ];
@@ -140,7 +123,7 @@ class MacolaboSformLoader {
     function apicall($url, $data, $auth_token) {
         $header = array('Content-Type: application/json');
         if(!empty($auth_token)) {
-        array_push($header, 'X-Auth-Token: ' . str_replace("\r","",$auth_token));
+            array_push($header, 'X-Auth-Token: ' . str_replace("\r","",$auth_token));
         }
         $_curl = curl_init();
         curl_setopt($_curl, CURLOPT_POST, TRUE);
@@ -148,8 +131,7 @@ class MacolaboSformLoader {
         curl_setopt($_curl, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($_curl, CURLOPT_HTTPHEADER, $header);
         curl_setopt($_curl, CURLOPT_HEADER, true);
-        curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);
-        
+        curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);        
         $res = curl_exec($_curl);
         
         $response_header_size = curl_getinfo($_curl, CURLINFO_HEADER_SIZE); 
@@ -177,5 +159,10 @@ class MacolaboSformLoader {
         preg_match('/<msform>.*<\/msform>/',str_replace("\n", '', $content), $params);
         $param_obj = simplexml_load_string($params[0]); 
         return $param_obj;
+    }
+
+    function get_hidden_param($form_id) {
+        $res = '<input type="hidden" id="sform_form_id" value="' . $form_id . '"/>';
+        return $res;
     }
 }

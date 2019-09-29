@@ -42,22 +42,44 @@ function msform_js_footer(){
     ?>
     <script type="text/javascript">
     //<![CDATA[
-        var ajaxurl = '<?php echo admin_url( 'admin-ajax.php'); ?>';
-        jQuery( '#submit-x' ).on( 'click', function(){
+        var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
+   
+        // 入力フォームの「次へ」ボタンクリック時
+        jQuery('#sform_button_confirm').on('click', function(){
+            var tmpData = {};
+
+            // フォーム入力内容でjson作る
+            jQuery(".sform-col-form-text").each(function(){
+                tmpData[this.id] = this.value;
+            });
+            jQuery(".sform-col-form-checkbox, .sform-col-form-radio").each(function(){
+                var tmpChecked = [];
+                $("[name=sel_" + this.id + "]").each(function(){
+                    if(this.checked) tmpChecked.push(this.value);
+                })
+                tmpData[this.id] = tmpChecked.join();
+            });
+
             jQuery.ajax({
                 type: 'POST',
                 url: ajaxurl,
                 data: {
-                    'action' : 'view_sitename'
+                    'action' : 'msform_validate_form',
+                    'contentType' : 'application/json',
+                    'data' : tmpData,
+                    'form_id' : jQuery("#sform_form_id").val()
                 },
                 success: function( response ){
                     alert( response );
+                    // validate ok なら確認フォームを表示
+                    // validate ng なら入力フォームにエラーメッセージを追加
                 },
-                error: function(){
+                error: function(a,b,c){
                     alert( 'error' );
+                    console.log(a);
+                    console.log(b);
                 }
             });
-            return false;
         });
     //]]>
     </script>
@@ -69,13 +91,15 @@ add_action( 'wp_footer', 'msform_js_footer' );
  * フォームバリデーション
  */
 function msform_validate_form(){
-
+    $loader = new MacolaboSformLoader();
+    $response = $loader->form_validate($_POST['form_id'], $_POST['data']);
 }
 
 /**
  * 確認ページ取得
  */
 function msform_confirm_form(){
+    var_dump($_POST);
 
 }
 
