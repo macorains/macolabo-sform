@@ -8,6 +8,14 @@ class MacolaboSformLoader {
 
     public function __construct()
     {
+        if(!function_exists('curl_init')){
+          print('Error: php_curl not installed.');
+          exit(1);
+        }
+        if(!function_exists('simplexml_load_string')){
+          print('Error: php_xml not installed.');
+          exit(1);
+        }
         $this->options = get_option('msform_setting');
         wp_enqueue_script('jquery');
 
