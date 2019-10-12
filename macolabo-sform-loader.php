@@ -60,7 +60,9 @@ class MacolaboSformLoader {
         ];
 
         $res = $this->apicall($url, $data, $auth_token);
-        $html = json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
+        $html = '<div class="sform_wrapper">';
+        $html .= json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
+        $html .= '</div>';
         return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
     }
 
@@ -81,40 +83,36 @@ class MacolaboSformLoader {
         $url = $this->options['api_url'] . "/validate";
         $data = Array('formid' => $form_id, 'receiverPath' => '', 'postdata' => $postdata);
         $res = $this->apicall($url, $data, $auth_token);
-
-        return json_encode($res['data']);
+        return json_encode($res);
     }
 
     /**
      * confirm
      */
-    function form_confirm($request) {
+    function form_confirm($form_id, $postdata, $cache_id) {
         $auth_token = $this->_login();
         $url = $this->options['api_url'] . "/confirm";
         $data = [
-            'formid' => $request['formid'],
-            'cacheid' => $request['cacheid'],
-            'receiverPath' => $request['receiverPath'],
-            'postdata' => $request['postdata']
+            'formid' => $form_id,
+            'cacheid' => $cache_id,
+            'receiverPath' => '',
+            'postdata' => $postdata
         ];
 
         $res = $this->apicall($url, $data, $auth_token);
-        $response_data = [
-            'html' => $res['data']
-        ];
-        return json_encode($response_data);
+        return json_encode($res);
     }
 
     /**
      * save
      */
-    function form_save($request) {
+    function form_save($form_id, $cache_id) {
         $auth_token = $this->_login();
         $url = $this->options['api_url'] . "/save";
         $data = [
-            'formid' => $request['formid'],
-            'cacheid' => $request['cacheid'],
-            'receiverPath' => $request['receiverPath'],
+            'formid' => $form_id,
+            'cacheid' => $cache_id,
+            'receiverPath' => '',
         ];
 
         $res = $this->apicall($url, $data, $auth_token);

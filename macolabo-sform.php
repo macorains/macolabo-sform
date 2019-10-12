@@ -70,15 +70,60 @@ function msform_js_footer(){
                     'form_id' : jQuery("#sform_form_id").val()
                 },
                 success: function( response ){
-                    alert( response );
                     // validate ok なら確認フォームを表示
+                    var response_data = JSON.parse(JSON.parse(response).data);
+                    jQuery.ajax({
+                        type: 'POST',
+                        url: ajaxurl,
+                        data: {
+                            'action' : 'msform_confirm_form',
+                            'contentType' : 'application/json',
+                            'data' : tmpData,
+                            'form_id' : jQuery("#sform_form_id").val(),
+                            'cache_id' : response_data.id
+                        },
+                        success: function( response ) {
+                            console.log(response);
+                            var response_data = JSON.parse(JSON.parse(response).data);
+                            jQuery("div.sform_wrapper").empty();
+                            jQuery("div.sform_wrapper").append(response_data);
+                            jQuery('#sform_button_submit').on('click', function(){
+                                alert('submit!');
+                                jQuery.ajax({
+                                    type: 'POST',
+                                    url: ajaxurl,
+                                    data: {
+                                        'action' : 'msform_save_form',
+                                        'contentType' : 'application/json',
+                                        'data' : tmpData,
+                                        'form_id' : jQuery("#hashed_id").val(),
+                                        'cache_id' : jQuery("#cache_id").val()
+                                    },
+                                    success: function(responce) {
+                                        console.log(response);
+                                        var response_data = JSON.parse(JSON.parse(response).data);
+                                        jQuery("div.sform_wrapper").empty();
+                                        jQuery("div.sform_wrapper").append(response_data);
+                                    }
+                                })
+                            });
+                        },
+                        error: function(a,b,c){
+                            console.log(a);
+                        }
+                    });
                     // validate ng なら入力フォームにエラーメッセージを追加
                 },
                 error: function(a,b,c){
                     alert( 'error' );
-                    console.log(a);
-                    console.log(b);
+                    //console.log(a);
+                    //console.log(b);
                 }
+            });
+
+            // 入力フォームの「送信」ボタンクリック時
+            jQuery('#sform_button_submit').on('click', function(){
+                alert('!!!');
             });
         });
     //]]>
@@ -93,20 +138,25 @@ add_action( 'wp_footer', 'msform_js_footer' );
 function msform_validate_form(){
     $loader = new MacolaboSformLoader();
     $response = $loader->form_validate($_POST['form_id'], $_POST['data']);
+    die($response);
 }
 
 /**
  * 確認ページ取得
  */
 function msform_confirm_form(){
-    var_dump($_POST);
-
+    $loader = new MacolaboSformLoader();
+    $response = $loader->form_confirm($_POST['form_id'], $_POST['data'], $_POST['cache_id']);
+    die($response);
 }
 
 /**
  * フォーム保存
  */
 function msform_save_form(){
+    $loader = new MacolaboSformLoader();
+    $response = $loader->form_save($_POST['form_id'], $_POST['cache_id']);
+    die($response);
 
 }
 
@@ -128,4 +178,15 @@ if(is_admin()){
 }
 
 
+if(!function_exists('_log')){
+    function _log($message) {
+      if (WP_DEBUG === true) {
+        if (is_array($message) || is_object($message)) {
+          error_log(print_r($message, true));
+        } else {
+          error_log($message);
+        }
+      }
+    }
+}
 ?>
