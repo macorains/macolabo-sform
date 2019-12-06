@@ -99,9 +99,9 @@ function msform_js_footer(){
                                         'form_id' : jQuery("#hashed_id").val(),
                                         'cache_id' : jQuery("#cache_id").val()
                                     },
-                                    success: function(responce) {
+                                    success: function(response) {
                                         console.log(response);
-                                        var response_data = JSON.parse(JSON.parse(response).data);
+                                        var response_data = JSON.parse(JSON.parse(response).html);
                                         jQuery("div.sform_wrapper").empty();
                                         jQuery("div.sform_wrapper").append(response_data);
                                     }
