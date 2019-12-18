@@ -148,8 +148,10 @@ function msform_js_footer(){
                             }
                         });
                     } else {
-                    // validate ng なら入力フォームにエラーメッセージを追加
-
+                        // validate ng なら入力フォームにエラーメッセージを追加
+                        Object.keys(response_data.result).forEach(function(k){
+                            jQuery('#sform-col-error-' + k)[0].textContent = response_data.result[k];
+                        })
                     }
                 },
                 error: function(a,b,c){
