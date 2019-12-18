@@ -78,75 +78,79 @@ function msform_js_footer(){
                     'form_id' : jQuery("#sform_form_id").val()
                 },
                 success: function( response ){
-                    // validate ok なら確認フォームを表示
+                    console.log(response);
                     var response_data = JSON.parse(JSON.parse(response).data);
+
+                    if(Object.keys(response_data.result).length === 0) {
+                    // validate ok なら確認フォームを表示
                     jQuery.ajax({
-                        type: 'POST',
-                        url: ajaxurl,
-                        data: {
-                            'action' : 'msform_confirm_form',
-                            'contentType' : 'application/json',
-                            'data' : tmpData,
-                            'form_id' : jQuery("#sform_form_id").val(),
-                            'cache_id' : response_data.id
-                        },
-                        success: function( response ) {
-                            console.log(response);
-                            var response_data = JSON.parse(JSON.parse(response).data);
-                            jQuery("div.sform_wrapper").empty();
-                            jQuery("div.sform_wrapper").append(response_data);
-                            // 「送信」クリック時
-                            jQuery('#sform_button_submit').on('click', function(){
-                                alert('submit!');
-                                jQuery.ajax({
-                                    type: 'POST',
-                                    url: ajaxurl,
-                                    data: {
-                                        'action' : 'msform_save_form',
-                                        'contentType' : 'application/json',
-                                        'data' : tmpData,
-                                        'form_id' : jQuery("#hashed_id").val(),
-                                        'cache_id' : jQuery("#cache_id").val()
-                                    },
-                                    success: function(response) {
-                                        console.log(response);
-                                        var response_data = JSON.parse(JSON.parse(response).html);
-                                        jQuery("div.sform_wrapper").empty();
-                                        jQuery("div.sform_wrapper").append(response_data);
-                                    }
-                                })
-                            });
-                            // 「戻る」クリック時
-                            jQuery('#sform_button_back').on('click', function(){
-                                jQuery.ajax({
-                                    type: 'POST',
-                                    url: ajaxurl,
-                                    data: {
-                                        'action' : 'msform_load_form',
-                                        'contentType' : 'application/json',
-                                        'form_id' : jQuery("#hashed_id").val(),
-                                        'cache_id' : jQuery("#cache_id").val()
-                                    },
-                                    success: function(response) {
-                                        jQuery("div.sform_wrapper").empty();
-                                        jQuery("div.sform_wrapper").append(response);
-                                        // 入力フォームの「次へ」ボタンクリック時
-                                        jQuery('#sform_button_confirm').on('click', function(){
-                                            that.onClickConfirm(that);
-                                        });
-                                        // 入力フォームの「キャンセル」ボタンクリック時
-                                        jQuery('#sform_button_cancel').on('click', function(){
-                                            that.onClickCancel(that);
-                                        });
-                                    }
-                                })
-                            });
-                        },
-                        error: function(a,b,c){
-                            console.log(a);
-                        }
-                    });
+                            type: 'POST',
+                            url: ajaxurl,
+                            data: {
+                                'action' : 'msform_confirm_form',
+                                'contentType' : 'application/json',
+                                'data' : tmpData,
+                                'form_id' : jQuery("#sform_form_id").val(),
+                                'cache_id' : response_data.id
+                            },
+                            success: function( response ) {
+                                var response_data = JSON.parse(JSON.parse(response).data);
+                                console.log(response_data);
+                                jQuery("div.sform_wrapper").empty();
+                                jQuery("div.sform_wrapper").append(response_data);
+                                // 「送信」クリック時
+                                jQuery('#sform_button_submit').on('click', function(){
+                                    jQuery.ajax({
+                                        type: 'POST',
+                                        url: ajaxurl,
+                                        data: {
+                                            'action' : 'msform_save_form',
+                                            'contentType' : 'application/json',
+                                            'data' : tmpData,
+                                            'form_id' : jQuery("#hashed_id").val(),
+                                            'cache_id' : jQuery("#cache_id").val()
+                                        },
+                                        success: function(response) {
+                                            var response_data = JSON.parse(JSON.parse(response).html);
+                                            jQuery("div.sform_wrapper").empty();
+                                            jQuery("div.sform_wrapper").append(response_data);
+                                        }
+                                    })
+                                });
+                                // 「戻る」クリック時
+                                jQuery('#sform_button_back').on('click', function(){
+                                    jQuery.ajax({
+                                        type: 'POST',
+                                        url: ajaxurl,
+                                        data: {
+                                            'action' : 'msform_load_form',
+                                            'contentType' : 'application/json',
+                                            'form_id' : jQuery("#hashed_id").val(),
+                                            'cache_id' : jQuery("#cache_id").val()
+                                        },
+                                        success: function(response) {
+                                            jQuery("div.sform_wrapper").empty();
+                                            jQuery("div.sform_wrapper").append(response);
+                                            // 入力フォームの「次へ」ボタンクリック時
+                                            jQuery('#sform_button_confirm').on('click', function(){
+                                                that.onClickConfirm(that);
+                                            });
+                                            // 入力フォームの「キャンセル」ボタンクリック時
+                                            jQuery('#sform_button_cancel').on('click', function(){
+                                                that.onClickCancel(that);
+                                            });
+                                        }
+                                    })
+                                });
+                            },
+                            error: function(a,b,c){
+                                console.log(a);
+                            }
+                        });
+                    } else {
                     // validate ng なら入力フォームにエラーメッセージを追加
+
+                    }
                 },
                 error: function(a,b,c){
                     alert( 'error' );
