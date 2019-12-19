@@ -78,12 +78,11 @@ function msform_js_footer(){
                     'form_id' : jQuery("#sform_form_id").val()
                 },
                 success: function( response ){
-                    console.log(response);
                     var response_data = JSON.parse(JSON.parse(response).data);
 
                     if(Object.keys(response_data.result).length === 0) {
-                    // validate ok なら確認フォームを表示
-                    jQuery.ajax({
+                        // validate ok なら確認フォームを表示
+                        jQuery.ajax({
                             type: 'POST',
                             url: ajaxurl,
                             data: {
@@ -95,7 +94,6 @@ function msform_js_footer(){
                             },
                             success: function( response ) {
                                 var response_data = JSON.parse(JSON.parse(response).data);
-                                console.log(response_data);
                                 jQuery("div.sform_wrapper").empty();
                                 jQuery("div.sform_wrapper").append(response_data);
                                 // 「送信」クリック時
