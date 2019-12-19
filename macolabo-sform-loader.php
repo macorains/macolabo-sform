@@ -31,25 +31,22 @@ class MacolaboSformLoader {
             'password' => $this->options['password'],
             'group' => $this->options['group']
         ];
-    
         $res = $this->apicall($url, $data, '');
         return $res['header']['X-Auth-Token'];
     }
 
     /**
-     * load
+     * initial_load
      * parameters
-     *   - auth_token : loginで取得したauthToken
      *   - content : wordpressの本文部分
      *   - cache_id  : フォームキャッシュID（エラー時に使用）
      *   - ini : 設定ファイル内容
      * return
      *   - response_data : レスポンス
      */
-    function form_load($auth_token, $content, $cache_id) {
-        $auth_token = empty($auth_token) ? $this->_login() : $auth_token;
+    function form_initial_load($content, $cache_id) {
+        $auth_token = $this->_login();
         $url = $this->options['api_url'] . "/load";
-        // TODO Validate失敗後のリロード時どうするか？
         $form_param = $this->get_form_param($content);
 
         foreach($form_param->form_id as $form_id)
@@ -64,6 +61,26 @@ class MacolaboSformLoader {
         $html .= json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
         $html .= '</div>';
         return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
+    }
+
+    /** 
+     * load
+     * parameters
+     *   - form_id   : フォームID
+     *   - cache_id  : フォームキャッシュID
+     * return
+     *   - response_data : レスポンス
+    */
+    function form_load($form_id, $cache_id) {
+        $auth_token = $this->_login();
+        $url = $this->options['api_url'] . "/load";
+        $data = [
+            'formid' => (string)$form_id,
+            'receiverPath' => '',
+            'cacheid' => $cache_id
+        ];
+        $res = $this->apicall($url, $data, $auth_token);
+        return json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
     }
 
     /**
@@ -100,6 +117,7 @@ class MacolaboSformLoader {
         ];
 
         $res = $this->apicall($url, $data, $auth_token);
+        // print(json_encode($res));
         return json_encode($res);
     }
 
