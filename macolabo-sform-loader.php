@@ -117,7 +117,6 @@ class MacolaboSformLoader {
         ];
 
         $res = $this->apicall($url, $data, $auth_token);
-        // print(json_encode($res));
         return json_encode($res);
     }
 

@@ -112,6 +112,11 @@ function msform_js_footer(){
                                             var response_data = JSON.parse(JSON.parse(response).html);
                                             jQuery("div.sform_wrapper").empty();
                                             jQuery("div.sform_wrapper").append(response_data);
+                                                // 「完了」ボタンクリック時
+                                                jQuery('#sform_button_finish').on('click', function(){
+                                                location.href = jQuery("#complete_url").val();
+                                            });
+
                                         }
                                     })
                                 });
@@ -158,15 +163,10 @@ function msform_js_footer(){
                     //console.log(b);
                 }
             });
-
-            // 入力フォームの「送信」ボタンクリック時
-            jQuery('#sform_button_submit').on('click', function(){
-                alert('!!!');
-            });
         }
 
         function onClickCancel() {
-            alert('cancel!');
+            location.href = jQuery("#cancel_url").val();
         }
     //]]>
     </script>
