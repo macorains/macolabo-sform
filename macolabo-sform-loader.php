@@ -154,7 +154,8 @@ class MacolaboSformLoader {
         curl_setopt($_curl, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($_curl, CURLOPT_HTTPHEADER, $header);
         curl_setopt($_curl, CURLOPT_HEADER, true);
-        curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);        
+        curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($_curl, CURLOPT_SSL_VERIFYPEER, false);
         $res = curl_exec($_curl);
         
         $response_header_size = curl_getinfo($_curl, CURLINFO_HEADER_SIZE); 
