@@ -49,7 +49,7 @@ class MacolaboSformLoader {
         $url = $this->options['api_url'] . "/load";
         $form_param = $this->get_form_param($content);
 
-        foreach($form_param->form_id as $form_id)
+        $form_id = $form_param['form_id'];
         $data = [
             'formid' => (string)$form_id,
             'receiverPath' => '',
@@ -157,7 +157,7 @@ class MacolaboSformLoader {
         curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($_curl, CURLOPT_SSL_VERIFYPEER, false);
         $res = curl_exec($_curl);
-        
+
         $response_header_size = curl_getinfo($_curl, CURLINFO_HEADER_SIZE); 
         $response_header_array = explode("\n", substr($res, 0, $response_header_size));
         $response_headers = [];
@@ -182,7 +182,7 @@ class MacolaboSformLoader {
     function get_form_param($content) {
         preg_match('/<msform>.*<\/msform>/',str_replace("\n", '', $content), $params);
         $param_obj = simplexml_load_string($params[0]); 
-        return $param_obj;
+        return json_decode(json_encode($param_obj), TRUE);
     }
 
     function get_hidden_param($form_id) {
