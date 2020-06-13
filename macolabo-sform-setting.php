@@ -54,6 +54,7 @@ class MacolaboSformSettingPage {
             <?php
                 settings_fields('msform_setting');
                 do_settings_sections('msform_setting');
+                $this->test_button();
                 submit_button();
             ?>
             </form>
@@ -104,6 +105,50 @@ class MacolaboSformSettingPage {
         ?>
         <input type="password" id="password" name="msform_setting[password]" value="<?php esc_attr_e($password)?>" />
         <?php
+    }
+
+    public function test_button()
+    {
+      ?>
+      <button type="button" class="button button-primary" id="connection_test">テスト</button>
+      <span id="connection_test_result" style="margin-left:10px"></span>
+      <script type="text/javascript">
+        //<![CDATA[
+        jQuery('#connection_test').on('click', function(){
+          var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
+          jQuery.ajax({
+                type: 'POST',
+                url: ajaxurl,
+                data: {
+                    'action' : 'msform_connection_check',
+                    'contentType' : 'application/json',
+                    'data' : {
+                      api_url: jQuery("#api_url").val(),
+                      user_id: jQuery("#user_id").val(),
+                      password: jQuery("#password").val(),
+                      group: jQuery("#group").val()
+                    }
+                },
+                success: function( response ){
+                  const data = JSON.parse(response);
+                  if(data.token.length === 0) {
+                    if(data.message.length === 0) {
+                      jQuery("#connection_test_result").text('結果: 接続失敗');
+                    } else {
+                      jQuery("#connection_test_result").text('結果: ログイン失敗');
+                    }
+                  } else {
+                    jQuery("#connection_test_result").text('結果: ログイン成功');
+                  }
+                },
+                error: function(a,b,c){
+                  jQuery("#connection_test_result").text('結果: 接続失敗');
+                }
+          });
+        });
+        //]]>
+      </script>
+      <?php
     }
 
     public function sanitize($input)

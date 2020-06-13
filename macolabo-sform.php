@@ -211,6 +211,22 @@ function msform_save_form(){
 
 }
 
+/**
+ * 疎通確認（ログインできるか）
+ */
+function msform_connection_check(){
+  $loader = new MacolaboSformLoader();
+  $data = $_POST['data'];
+  $info = [
+    'api_url' => $data['api_url'],
+    'user_id' => $data['user_id'],
+    'password' => $data['password'],
+    'group' => $data['group']
+  ];
+  $response = json_encode($loader->_login($info));
+  die($response);
+}
+
 add_action('wp_ajax_msform_load_form', 'msform_load_form');
 add_action('wp_ajax_msform_validate_form', 'msform_validate_form');
 add_action('wp_ajax_nopriv_msform_validate_form', 'msform_validate_form');
@@ -218,6 +234,7 @@ add_action('wp_ajax_msform_confirm_form', 'msform_confirm_form');
 add_action('wp_ajax_nopriv_msform_confirm_form', 'msform_confirm_form');
 add_action('wp_ajax_msform_save_form', 'msform_save_form');
 add_action('wp_ajax_nopriv_msform_save_form', 'msform_save_form');
+add_action('wp_ajax_msform_connection_check', 'msform_connection_check');
 
 add_filter( 'the_content', function($content) {
     $loader = new MacolaboSformLoader();
