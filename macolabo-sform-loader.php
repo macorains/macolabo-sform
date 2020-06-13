@@ -24,15 +24,23 @@ class MacolaboSformLoader {
     /**
      * login
      */
-    function _login() {
-        $url = $this->options['api_url'] . "/signin";
+    function _login($info = null) {
+        $url = (is_null($info) ? $this->options['api_url'] : $info['api_url'] ) . "/signin";
         $data = [
-            'email' => $this->options['user_id'],
-            'password' => $this->options['password'],
-            'group' => $this->options['group']
+            'email' => is_null($info) ? $this->options['user_id'] : $info['user_id'],
+            'password' => is_null($info) ? $this->options['password'] : $info['password'],
+            'group' => is_null($info) ? $this->options['group'] : $info['group']
         ];
-        $res = $this->apicall($url, $data, '');
-        return $res['header']['X-Auth-Token'];
+        $result = $this->apicall($url, $data, '');
+
+        $res = [
+          'token' => array_key_exists('X-Auth-Token', $result['header']) ? $result['header']['X-Auth-Token'] : '',
+          'message' => $result['data']
+        ];
+        //var_dump($res);
+        //return $res['header']['X-Auth-Token'];
+        //return var_export($res, true);
+        return $res;
     }
 
     /**
@@ -45,7 +53,8 @@ class MacolaboSformLoader {
      *   - response_data : レスポンス
      */
     function form_initial_load($content, $cache_id) {
-        $auth_token = $this->_login();
+        $login = $this->_login();
+        $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/load";
         $form_param = $this->get_form_param($content);
 
@@ -72,7 +81,8 @@ class MacolaboSformLoader {
      *   - response_data : レスポンス
     */
     function form_load($form_id, $cache_id) {
-        $auth_token = $this->_login();
+        $login = $this->_login();
+        $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/load";
         $data = [
             'formid' => (string)$form_id,
@@ -96,7 +106,8 @@ class MacolaboSformLoader {
     function form_validate($form_id, $postdata) {
         // Memo JWT認証の場合、セッションID毎にハッシュを作るので、load時とvalidate時でセッション違うため引き回しできない
         //      セッションごとに認証通す必要ある
-        $auth_token = $this->_login();
+        $login = $this->_login();
+        $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/validate";
         $data = Array('formid' => $form_id, 'receiverPath' => '', 'postdata' => $postdata);
         $res = $this->apicall($url, $data, $auth_token);
@@ -107,7 +118,8 @@ class MacolaboSformLoader {
      * confirm
      */
     function form_confirm($form_id, $postdata, $cache_id) {
-        $auth_token = $this->_login();
+        $login = $this->_login();
+        $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/confirm";
         $data = [
             'formid' => $form_id,
@@ -124,7 +136,8 @@ class MacolaboSformLoader {
      * save
      */
     function form_save($form_id, $cache_id) {
-        $auth_token = $this->_login();
+        $login = $this->_login();
+        $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/save";
         $data = [
             'formid' => $form_id,
