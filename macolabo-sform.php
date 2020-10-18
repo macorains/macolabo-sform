@@ -53,7 +53,7 @@ function msform_js_footer(){
         jQuery('#sform_button_cancel').on('click', function(){
             onClickCancel(that);
         });
-
+        
         function onClickConfirm(that) {
             var tmpData = {};
             // フォーム入力内容でjson作る
@@ -67,6 +67,7 @@ function msform_js_footer(){
                 })
                 tmpData[this.id] = tmpChecked.join();
             });
+            console.log(tmpData);
 
             jQuery.ajax({
                 type: 'POST',
@@ -79,8 +80,7 @@ function msform_js_footer(){
                 },
                 success: function( response ){
                     var response_data = JSON.parse(JSON.parse(response).data);
-
-                    if(Object.keys(response_data.result).length === 0) {
+                    if(Object.keys(response_data.validate_result).length === 0) {
                         // validate ok なら確認フォームを表示
                         jQuery.ajax({
                             type: 'POST',
@@ -88,9 +88,9 @@ function msform_js_footer(){
                             data: {
                                 'action' : 'msform_confirm_form',
                                 'contentType' : 'application/json',
-                                'data' : tmpData,
+                                'data' :  tmpData,
                                 'form_id' : jQuery("#sform_form_id").val(),
-                                'cache_id' : response_data.id
+                                'cache_id' : response_data.cache_id
                             },
                             success: function( response ) {
                                 var response_data = JSON.parse(JSON.parse(response).data);
@@ -152,8 +152,8 @@ function msform_js_footer(){
                         });
                     } else {
                         // validate ng なら入力フォームにエラーメッセージを追加
-                        Object.keys(response_data.result).forEach(function(k){
-                            jQuery('#sform-col-error-' + k)[0].textContent = response_data.result[k];
+                        Object.keys(response_data.validate_result).forEach(function(k){
+                            jQuery('#sform-col-error-' + k)[0].textContent = response_data.validate_result[k];
                         })
                     }
                 },

@@ -6,6 +6,8 @@ class MacolaboSformLoader {
 
     private $options;
 
+    private $common_error_login = '<div class="sform_wrapper">' . "Can't connect to SformAPI." . '</div>';
+
     public function __construct()
     {
         if(!function_exists('curl_init')){
@@ -37,9 +39,6 @@ class MacolaboSformLoader {
           'token' => array_key_exists('X-Auth-Token', $result['header']) ? $result['header']['X-Auth-Token'] : '',
           'message' => $result['data']
         ];
-        //var_dump($res);
-        //return $res['header']['X-Auth-Token'];
-        //return var_export($res, true);
         return $res;
     }
 
@@ -54,22 +53,26 @@ class MacolaboSformLoader {
      */
     function form_initial_load($content, $cache_id) {
         $login = $this->_login();
-        $auth_token = $login['token'];
-        $url = $this->options['api_url'] . "/load";
-        $form_param = $this->get_form_param($content);
+        if($login['message'] == '"OK"'){
+            $auth_token = $login['token'];
+            $url = $this->options['api_url'] . "/load";
+            $form_param = $this->get_form_param($content);
 
-        $form_id = $form_param['form_id'];
-        $data = [
-            'formid' => (string)$form_id,
-            'receiverPath' => '',
-            'cacheid' => $cache_id
-        ];
+            $form_id = $form_param['form_id'];
+            $data = [
+                'hashed_form_id' => (string)$form_id,
+                'receiver_path' => '',
+                'cache_id' => $cache_id
+            ];
 
-        $res = $this->apicall($url, $data, $auth_token);
-        $html = '<div class="sform_wrapper">';
-        $html .= json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
-        $html .= '</div>';
-        return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
+            $res = $this->apicall($url, $data, $auth_token);
+            $html = '<div class="sform_wrapper">';
+            $html .= json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
+            $html .= '</div>';
+            return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
+        } else {
+            return preg_replace('/<msform>.*<\/msform>/', $this->common_error_login, str_replace("\n", '', $content));
+        }
     }
 
     /** 
@@ -85,9 +88,9 @@ class MacolaboSformLoader {
         $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/load";
         $data = [
-            'formid' => (string)$form_id,
-            'receiverPath' => '',
-            'cacheid' => $cache_id
+            'hashed_form_id' => (string)$form_id,
+            'receiver_path' => '',
+            'cache_id' => $cache_id
         ];
         $res = $this->apicall($url, $data, $auth_token);
         return json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
@@ -107,9 +110,14 @@ class MacolaboSformLoader {
         // Memo JWT認証の場合、セッションID毎にハッシュを作るので、load時とvalidate時でセッション違うため引き回しできない
         //      セッションごとに認証通す必要ある
         $login = $this->_login();
+        
         $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/validate";
-        $data = Array('formid' => $form_id, 'receiverPath' => '', 'postdata' => $postdata);
+        $data = [
+          'hashed_form_id' => (string)$form_id,
+          'receiver_path' => '',
+          'postdata' => $postdata
+        ];
         $res = $this->apicall($url, $data, $auth_token);
         return json_encode($res);
     }
@@ -122,9 +130,9 @@ class MacolaboSformLoader {
         $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/confirm";
         $data = [
-            'formid' => $form_id,
-            'cacheid' => $cache_id,
-            'receiverPath' => '',
+            'hashed_form_id' => $form_id,
+            'cache_id' => $cache_id,
+            'receiver_path' => '',
             'postdata' => $postdata
         ];
 
@@ -140,9 +148,9 @@ class MacolaboSformLoader {
         $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/save";
         $data = [
-            'formid' => $form_id,
-            'cacheid' => $cache_id,
-            'receiverPath' => '',
+            'hashed_form_id' => $form_id,
+            'cache_id' => $cache_id,
+            'receiver_path' => '',
         ];
 
         $res = $this->apicall($url, $data, $auth_token);
