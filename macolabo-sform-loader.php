@@ -57,19 +57,22 @@ class MacolaboSformLoader {
             $auth_token = $login['token'];
             $url = $this->options['api_url'] . "/load";
             $form_param = $this->get_form_param($content);
+            if($form_param != null) {
+                $form_id = $form_param['form_id'];
+                $data = [
+                    'hashed_form_id' => (string)$form_id,
+                    'receiver_path' => '',
+                    'cache_id' => $cache_id
+                ];
 
-            $form_id = $form_param['form_id'];
-            $data = [
-                'hashed_form_id' => (string)$form_id,
-                'receiver_path' => '',
-                'cache_id' => $cache_id
-            ];
-
-            $res = $this->apicall($url, $data, $auth_token);
-            $html = '<div class="sform_wrapper">';
-            $html .= json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
-            $html .= '</div>';
-            return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
+                $res = $this->apicall($url, $data, $auth_token);
+                $html = '<div class="sform_wrapper">';
+                $html .= json_decode($res['data']) . $this->get_hidden_param((string)$form_id);
+                $html .= '</div>';
+                return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
+            } else {
+                return "";
+            }
         } else {
             return preg_replace('/<msform>.*<\/msform>/', $this->common_error_login, str_replace("\n", '', $content));
         }
@@ -135,7 +138,6 @@ class MacolaboSformLoader {
             'receiver_path' => '',
             'postdata' => $postdata
         ];
-
         $res = $this->apicall($url, $data, $auth_token);
         return json_encode($res);
     }
@@ -202,8 +204,12 @@ class MacolaboSformLoader {
      */
     function get_form_param($content) {
         preg_match('/<msform>.*<\/msform>/',str_replace("\n", '', $content), $params);
-        $param_obj = simplexml_load_string($params[0]); 
-        return json_decode(json_encode($param_obj), TRUE);
+        if(empty($params)){
+            return null;
+        } else {
+            $param_obj = simplexml_load_string($params[0]); 
+            return json_decode(json_encode($param_obj), TRUE);
+        }
     }
 
     function get_hidden_param($form_id) {

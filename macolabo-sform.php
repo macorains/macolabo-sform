@@ -57,17 +57,16 @@ function msform_js_footer(){
         function onClickConfirm(that) {
             var tmpData = {};
             // フォーム入力内容でjson作る
-            jQuery(".sform-col-form-text").each(function(){
-                tmpData[this.id] = this.value;
+            jQuery(".sform-col-form-text").each(function(index, elem){
+                tmpData[this.name] = this.value;
             });
             jQuery(".sform-col-form-checkbox, .sform-col-form-radio").each(function(){
                 var tmpChecked = [];
-                $("[name=sel_" + this.id + "]").each(function(){
+                jQuery("[name=sel_" + this.id + "]").each(function(){
                     if(this.checked) tmpChecked.push(this.value);
                 })
                 tmpData[this.id] = tmpChecked.join();
             });
-            console.log(tmpData);
 
             jQuery.ajax({
                 type: 'POST',
@@ -153,7 +152,7 @@ function msform_js_footer(){
                     } else {
                         // validate ng なら入力フォームにエラーメッセージを追加
                         Object.keys(response_data.validate_result).forEach(function(k){
-                            jQuery('#sform-col-error-' + k)[0].textContent = response_data.validate_result[k];
+                            jQuery('#sform-col-input-error-' + k).text(response_data.validate_result[k]);
                         })
                     }
                 },
