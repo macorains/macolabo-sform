@@ -129,20 +129,23 @@ function msform_js_footer(){
                                             'contentType' : 'application/json',
                                             'form_id' : jQuery("#hashed_id").val(),
                                             'cache_id' : jQuery("#cache_id").val()
-                                        },
-                                        success: function(response) {
-                                            jQuery("div.sform_wrapper").empty();
-                                            jQuery("div.sform_wrapper").append(response);
-                                            // 入力フォームの「次へ」ボタンクリック時
-                                            jQuery('#sform_button_confirm').on('click', function(){
-                                                that.onClickConfirm(that);
-                                            });
-                                            // 入力フォームの「キャンセル」ボタンクリック時
-                                            jQuery('#sform_button_cancel').on('click', function(){
-                                                that.onClickCancel(that);
-                                            });
                                         }
-                                    })
+                                    }).done(function(data, textStatus, jqXHR){
+                                        jQuery("div.sform_wrapper").empty();
+                                        jQuery("div.sform_wrapper").append(response);
+                                        // 入力フォームの「次へ」ボタンクリック時
+                                        jQuery('#sform_button_confirm').on('click', function(){
+                                            that.onClickConfirm(that);
+                                        });
+                                        // 入力フォームの「キャンセル」ボタンクリック時
+                                        jQuery('#sform_button_cancel').on('click', function(){
+                                            that.onClickCancel(that);
+                                        });
+                                    }).fail(function(jqXHR, textStatus, errorThrown){
+                                        console.log(jqXHR)
+                                        console.log(textStatus)
+                                        console.log(errorThrown)
+                                    });
                                 });
                             },
                             error: function(a,b,c){
