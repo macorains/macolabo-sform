@@ -29,11 +29,10 @@ class MacolaboSformLoader {
     function _login($info = null) {
         $url = (is_null($info) ? $this->options['api_url'] : $info['api_url'] ) . "/signin";
         $data = [
-            'email' => is_null($info) ? $this->options['user_id'] : $info['user_id'],
             'password' => is_null($info) ? $this->options['password'] : $info['password'],
-            'group' => is_null($info) ? $this->options['group'] : $info['group']
+            'username' => is_null($info) ? $this->options['group'] : $info['group']
         ];
-        $result = $this->apicall($url, $data, '');
+        $result = $this->apicall_form($url, $data, '');
 
         $res = [
           'token' => array_key_exists('X-Auth-Token', $result['header']) ? $result['header']['X-Auth-Token'] : '',
@@ -75,7 +74,7 @@ class MacolaboSformLoader {
         }
     }
 
-    /** 
+    /**
      * load
      * parameters
      *   - form_id   : フォームID
@@ -110,7 +109,7 @@ class MacolaboSformLoader {
         // Memo JWT認証の場合、セッションID毎にハッシュを作るので、load時とvalidate時でセッション違うため引き回しできない
         //      セッションごとに認証通す必要ある
         $login = $this->_login();
-        
+
         $auth_token = $login['token'];
         $url = $this->options['api_url'] . "/validate";
         $data = [
@@ -179,7 +178,7 @@ class MacolaboSformLoader {
         curl_setopt($_curl, CURLOPT_SSL_VERIFYPEER, false);
         $res = curl_exec($_curl);
 
-        $response_header_size = curl_getinfo($_curl, CURLINFO_HEADER_SIZE); 
+        $response_header_size = curl_getinfo($_curl, CURLINFO_HEADER_SIZE);
         $response_header_array = explode("\n", substr($res, 0, $response_header_size));
         $response_headers = [];
         $response_body = substr($res, $response_header_size);
@@ -198,11 +197,48 @@ class MacolaboSformLoader {
     }
 
     /**
+     * apicall_form
+     */
+    function apicall_form($url, $data, $auth_token) {
+        $header = array('Content-Type: application/x-www-form-urlencoded');
+        if(!empty($auth_token)) {
+            array_push($header, 'X-Auth-Token: ' . str_replace("\r","",$auth_token));
+        }
+        $_curl = curl_init();
+        curl_setopt($_curl, CURLOPT_POST, TRUE);
+        curl_setopt($_curl, CURLOPT_URL, $url);
+        curl_setopt($_curl, CURLOPT_POSTFIELDS, http_build_query($data));
+        curl_setopt($_curl, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($_curl, CURLOPT_HEADER, true);
+        curl_setopt($_curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($_curl, CURLOPT_SSL_VERIFYPEER, false);
+        $res = curl_exec($_curl);
+
+        $response_header_size = curl_getinfo($_curl, CURLINFO_HEADER_SIZE);
+        $response_header_array = explode("\n", substr($res, 0, $response_header_size));
+        $response_headers = [];
+        $response_body = substr($res, $response_header_size);
+
+        foreach($response_header_array as $header){
+            $h = explode(":", $header);
+            $response_headers[$h[0]] = empty($h[1])?"":$h[1];
+        }
+
+        $response_data = [
+            'header' => $response_headers,
+            'data' => $response_body
+        ];
+        curl_close($_curl);
+        return $response_data;
+    }
+
+
+    /**
      * get_form_param
      */
     function get_form_param($content) {
         preg_match('/<msform>.*<\/msform>/',str_replace("\n", '', $content), $params);
-        $param_obj = simplexml_load_string($params[0]); 
+        $param_obj = simplexml_load_string($params[0]);
         return json_decode(json_encode($param_obj), TRUE);
     }
 

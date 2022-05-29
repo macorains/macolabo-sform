@@ -3,7 +3,7 @@
  * Sform設定画面用クラス
  */
 class MacolaboSformSettingPage {
-    private $options; 
+    private $options;
 
     /**
      * コンストラクタ
@@ -30,9 +30,9 @@ class MacolaboSformSettingPage {
         register_setting('msform_setting', 'msform_setting', array($this, 'sanitize'));
         add_settings_section('msform_setting_section_id', '', '', 'msform_setting');
         add_settings_field('api_url', 'URL', array($this, 'api_url_callback'), 'msform_setting', 'msform_setting_section_id');
-        add_settings_field('user_id', 'ユーザーID', array($this, 'user_id_callback'), 'msform_setting', 'msform_setting_section_id');
+        // add_settings_field('user_id', 'ユーザーID', array($this, 'user_id_callback'), 'msform_setting', 'msform_setting_section_id');
         add_settings_field('group', 'グループ', array($this, 'group_callback'), 'msform_setting', 'msform_setting_section_id');
-        add_settings_field('password', 'パスワード', array($this, 'password_callback'), 'msform_setting', 'msform_setting_section_id');
+        add_settings_field('password', 'APIトークン', array($this, 'password_callback'), 'msform_setting', 'msform_setting_section_id');
     }
 
     /**
@@ -135,6 +135,7 @@ class MacolaboSformSettingPage {
                     if(data.message.length === 0) {
                       jQuery("#connection_test_result").text('結果: 接続失敗');
                     } else {
+                      console.log(data.message)
                       jQuery("#connection_test_result").text('結果: ログイン失敗');
                     }
                   } else {

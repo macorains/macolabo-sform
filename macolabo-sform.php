@@ -11,16 +11,16 @@ License: GPL2
 ?>
 <?php
 /*  Copyright 2019 Macorains (email : mac.rainshrine@gmail.com)
- 
+
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License, version 2, as
      published by the Free Software Foundation.
- 
+
     This program is distributed in the hope that it will be useful,
     but WITHOUT ANY WARRANTY; without even the implied warranty of
     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
     GNU General Public License for more details.
- 
+
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
@@ -44,7 +44,7 @@ function msform_js_footer(){
     //<![CDATA[
         var that = this;
         var ajaxurl = '<?php echo admin_url( 'admin-ajax.php' ); ?>';
-   
+
         // 入力フォームの「次へ」ボタンクリック時
         jQuery('#sform_button_confirm').on('click', function(){
             onClickConfirm(that);
@@ -53,7 +53,7 @@ function msform_js_footer(){
         jQuery('#sform_button_cancel').on('click', function(){
             onClickCancel(that);
         });
-        
+
         function onClickConfirm(that) {
             var tmpData = {};
             // フォーム入力内容でjson作る
@@ -170,7 +170,7 @@ function msform_js_footer(){
         }
     //]]>
     </script>
-<?php    
+<?php
 }
 add_action( 'wp_footer', 'msform_js_footer' );
 
