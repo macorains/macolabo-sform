@@ -67,7 +67,6 @@ function msform_js_footer(){
                 })
                 tmpData[this.id] = tmpChecked.join();
             });
-            console.log(tmpData);
 
             jQuery.ajax({
                 type: 'POST',
@@ -159,8 +158,6 @@ function msform_js_footer(){
                 },
                 error: function(a,b,c){
                     alert( 'error' );
-                    //console.log(a);
-                    //console.log(b);
                 }
             });
         }
