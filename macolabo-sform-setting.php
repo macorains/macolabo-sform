@@ -3,7 +3,7 @@
  * Sform設定画面用クラス
  */
 class MacolaboSformSettingPage {
-    private $options; 
+    private $options;
 
     /**
      * コンストラクタ
@@ -30,9 +30,8 @@ class MacolaboSformSettingPage {
         register_setting('msform_setting', 'msform_setting', array($this, 'sanitize'));
         add_settings_section('msform_setting_section_id', '', '', 'msform_setting');
         add_settings_field('api_url', 'URL', array($this, 'api_url_callback'), 'msform_setting', 'msform_setting_section_id');
-        add_settings_field('user_id', 'ユーザーID', array($this, 'user_id_callback'), 'msform_setting', 'msform_setting_section_id');
         add_settings_field('group', 'グループ', array($this, 'group_callback'), 'msform_setting', 'msform_setting_section_id');
-        add_settings_field('password', 'パスワード', array($this, 'password_callback'), 'msform_setting', 'msform_setting_section_id');
+        add_settings_field('password', 'APIトークン', array($this, 'password_callback'), 'msform_setting', 'msform_setting_section_id');
     }
 
     /**
@@ -70,17 +69,6 @@ class MacolaboSformSettingPage {
         $api_url = isset($this->options['api_url']) ? $this->options['api_url'] : '';
         ?>
         <input type="text" id="api_url" name="msform_setting[api_url]" value="<?php esc_attr_e($api_url)?>" />
-        <?php
-    }
-
-    /**
-     * 入力項目「ユーザーID」のHTML出力
-     */
-    public function user_id_callback()
-    {
-        $user_id = isset($this->options['user_id']) ? $this->options['user_id'] : '';
-        ?>
-        <input type="text" id="user_id" name="msform_setting[user_id]" value="<?php esc_attr_e($user_id)?>" />
         <?php
     }
 
@@ -124,7 +112,6 @@ class MacolaboSformSettingPage {
                     'contentType' : 'application/json',
                     'data' : {
                       api_url: jQuery("#api_url").val(),
-                      user_id: jQuery("#user_id").val(),
                       password: jQuery("#password").val(),
                       group: jQuery("#group").val()
                     }
@@ -135,6 +122,7 @@ class MacolaboSformSettingPage {
                     if(data.message.length === 0) {
                       jQuery("#connection_test_result").text('結果: 接続失敗');
                     } else {
+                      console.log(data.message)
                       jQuery("#connection_test_result").text('結果: ログイン失敗');
                     }
                   } else {
@@ -161,13 +149,6 @@ class MacolaboSformSettingPage {
         } else {
             add_settings_error('msform_setting', 'api_url', 'URLを入力してください');
             $new_input['api_url']= isset($this->options['api_url']) ? $this->options['api_url'] : '';
-        }
-
-        if(isset($input['user_id']) && trim($input['user_id']) !== ''){
-            $new_input['user_id'] = sanitize_text_field($input['user_id']);
-        } else {
-            add_settings_error('msform_setting', 'user_id', 'ユーザーIDを入力してください');
-            $new_input['user_id']= isset($this->options['user_id']) ? $this->options['user_id'] : '';
         }
 
         if(isset($input['group']) && trim($input['group']) !== ''){
