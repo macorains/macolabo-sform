@@ -52,7 +52,7 @@ class MacolaboSformLoader {
      */
     function form_initial_load($content, $cache_id) {
         $login = $this->_login();
-        if($login['message'] == '"OK"'){
+        if($login['token'] != ''){
             $auth_token = $login['token'];
             $url = $this->options['api_url'] . "/load";
             $form_param = $this->get_form_param($content);
@@ -70,7 +70,12 @@ class MacolaboSformLoader {
             $html .= '</div>';
             return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
         } else {
-            return preg_replace('/<msform>.*<\/msform>/', $this->common_error_login, str_replace("\n", '', $content));
+            $html = '<div class="sform_wrapper">';
+            $html .= '<h4>' . $this->common_error_login . '</h4>';
+            $html .= '<p>' . json_decode($res) . '</p>';
+            $html .= '<p>' . $this->get_hidden_param((string)$form_id) . '</p>';
+            $html .= '</div>';
+            return preg_replace('/<msform>.*<\/msform>/', $html, str_replace("\n", '', $content));
         }
     }
 
