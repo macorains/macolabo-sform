@@ -3,7 +3,7 @@
 Plugin Name: Sform Plugin
 Plugin URI:
 Description: Sformによるフォーム表示
-Version: 0.0.2
+Version: 0.0.3
 Author: Macorains
 Author URI:
 License: GPL2
@@ -62,12 +62,12 @@ function msform_js_footer(){
             });
             jQuery(".sform-col-form-checkbox, .sform-col-form-radio").each(function(){
                 var tmpChecked = [];
-                $("[name=sel_" + this.id + "]").each(function(){
+                jQuery("[name=sel_" + this.id + "]").each(function(){
                     if(this.checked) tmpChecked.push(this.value);
                 })
                 tmpData[this.id] = tmpChecked.join();
             });
-
+            console.log(tmpData);
             jQuery.ajax({
                 type: 'POST',
                 url: ajaxurl,
@@ -79,6 +79,8 @@ function msform_js_footer(){
                 },
                 success: function( response ){
                     var response_data = JSON.parse(JSON.parse(response).data);
+                    console.log('*** validate result***')
+                    console.log(response_data)
                     if(Object.keys(response_data.validate_result).length === 0) {
                         // validate ok なら確認フォームを表示
                         jQuery.ajax({
@@ -93,6 +95,8 @@ function msform_js_footer(){
                             },
                             success: function( response ) {
                                 var response_data = JSON.parse(JSON.parse(response).data);
+                                console.log('*** confirm result***')
+                                console.log(response)
                                 jQuery("div.sform_wrapper").empty();
                                 jQuery("div.sform_wrapper").append(response_data);
                                 // 「送信」クリック時
@@ -104,10 +108,12 @@ function msform_js_footer(){
                                             'action' : 'msform_save_form',
                                             'contentType' : 'application/json',
                                             'data' : tmpData,
-                                            'form_id' : jQuery("#hashed_id").val(),
-                                            'cache_id' : jQuery("#cache_id").val()
+                                            'form_id' : jQuery("#sform_form_id").val(),
+                                            'cache_id' : jQuery("#sform_cache_id").val()
                                         },
                                         success: function(response) {
+                                            console.log('*** save result ***')
+                                            console.log(response)
                                             var response_data = JSON.parse(JSON.parse(response).html);
                                             jQuery("div.sform_wrapper").empty();
                                             jQuery("div.sform_wrapper").append(response_data);
@@ -121,16 +127,19 @@ function msform_js_footer(){
                                 });
                                 // 「戻る」クリック時
                                 jQuery('#sform_button_back').on('click', function(){
+                                    console.log(jQuery("#sform_form_id").val())
+                                    console.log(jQuery("#sform_cache_id").val())
                                     jQuery.ajax({
                                         type: 'POST',
                                         url: ajaxurl,
                                         data: {
                                             'action' : 'msform_load_form',
                                             'contentType' : 'application/json',
-                                            'form_id' : jQuery("#hashed_id").val(),
-                                            'cache_id' : jQuery("#cache_id").val()
+                                            'form_id' : jQuery("#sform_form_id").val(),
+                                            'cache_id' : jQuery("#sform_cache_id").val()
                                         },
                                         success: function(response) {
+                                            console.log(response)
                                             jQuery("div.sform_wrapper").empty();
                                             jQuery("div.sform_wrapper").append(response);
                                             // 入力フォームの「次へ」ボタンクリック時
@@ -141,6 +150,11 @@ function msform_js_footer(){
                                             jQuery('#sform_button_cancel').on('click', function(){
                                                 that.onClickCancel(that);
                                             });
+                                        },
+                                        error: function(a,b,c) {
+                                            console.error(a);
+                                            console.error(b);
+                                            console.error(c);
                                         }
                                     })
                                 });
